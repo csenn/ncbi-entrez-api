@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
-    "build": "babel src --out-dir lib"
+    "compile": "babel src --out-dir lib",
+    "prepublish": "npm run compile"
   },
   "author": "Craig Sennabaum",
   "license": "ISC",
