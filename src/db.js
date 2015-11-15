@@ -1,13 +1,14 @@
 import _ from 'lodash'
 import request from 'request'
-import {getFormatsForDb, getOptionsByDbAndFormat} from './dbs/config'
 import {
+	INFO_URL,
+	POST_URL,
 	SEARCH_URL,
 	SUMMARY_URL,
 	FETCH_URL,
-	LINK_URL
-} from './urls'
-
+	LINK_URL,
+	SPELL_URL
+} from './constants'
 
 export default class Db {
 
@@ -15,35 +16,106 @@ export default class Db {
 		this.name = name
 	}
 
-	getFormats() {
-		return getFormatsForDb(this.name)
+	einfo(options, callback) {
+		if (_.isFunction(options)) {
+			callback = options
+			options = null
+		}
+
+		let opts = getOpts(INFO_URL)
+		_.assign(opts.qs, options)
+		return this.request(opts, callback)
 	}
 
-	search(options, callback) {
-		return this.request(getSearchOptions(options), callback)
+	epost(options, callback) {
+		validateIds(options)
+
+		let opts = getOpts(POST_URL)
+		mergeIds(opts, options)
+		_.assign(opts.qs, options)
+		return this.request(opts, callback)
 	}
 
-	summary(options, callback) {
-		return this.request(getSummaryOptions(options), callback)
+	elink(options, callback) {
+		validateDbFrom(options)
+		validateIds(options)
+
+		let opts = getOpts(LINK_URL)
+		mergeIds(opts, options)
+		_.assign(opts.qs, options)
+		return this.request(opts, callback)
 	}
 
-	fetch(options, callback) {
-		return this.request(getFetchOptions(this.name, options), callback)
+	espell(options, callback) {
+		validateTerm(options)
+
+		let opts = getOpts(SPELL_URL)
+		_.assign(opts.qs, options)
+		return this.request(opts, callback)
 	}
 
-	// db is current Db
-	link(options, callback) {
-		return this.request(getLinkOptions(options), callback)
+	esearch(options, callback) {
+		validateTerm(options)
+
+		let opts = getOpts(SEARCH_URL)
+		_.assign(opts.qs, options)
+		return this.request(opts, callback)
+	}
+
+	esummary(options, callback) {
+		validateIds(options)
+
+		let opts = getOpts(SUMMARY_URL)
+		mergeIds(opts, options)
+		_.assign(opts.qs, options)
+		return this.request(opts, callback)
+	}
+
+	efetch(options, callback) {
+		validateIds(options)
+
+		let opts = getOpts(FETCH_URL)
+		mergeIds(opts, options)
+		_.assign(opts.qs, options)
+		return this.request(opts, callback)
 	}
 
 	request(opts, callback) {
+		if (opts.qs.retmode === 'json') {
+			opts.json = true
+		}
 		opts.qs.db = this.name
-		return request(opts, callback)
+		return request.get(opts, callback)
 	}
 }
 
 // Convenience functions
+function validateOptionsExist(options) {
+	if (!options || _.isFunction(options)) throw new Error('Must provide valid options')
+}
+
+function validateIds(options) {
+	validateOptionsExist(options)
+	if (!options.id && !options.ids) throw new Error('Must provide options.ids')
+}
+
+function validateDbFrom(options) {
+	validateOptionsExist(options)
+	if (!options.dbFrom) throw new Error('Must provide options.dbFrom')
+}
+
+function validateTerm(options) {
+	validateOptionsExist(options)
+	if (!options.term) throw new Error('Must Provide Term')
+}
+
+export function getOpts(url) {
+	return { url: url, qs: {} }
+}
+
 export function mergeIds(opts, options) {
+	// Should already be called above, but safe here
+	validateIds(options)
 	let ids = options.id || options.ids
 	delete options.ids
 	delete options.id
@@ -53,83 +125,6 @@ export function mergeIds(opts, options) {
 	opts.qs.id = ids
 }
 
-export function mergeSimpleFormat(opts, options) {
-	if (options.format) {
-		if (options.format === 'json') {
-			opts.json = true
-		}
-		opts.qs['retmode'] = options.format
-		delete options.format
-	}
-}
-
-// Option builders
-export function getSearchOptions(options) {
-	if (!options || !options.term) {
-		throw new Error('Must Provide DB and Term')
-	}
-
-	let opts = { url: SEARCH_URL, qs: {} }
-
-	mergeSimpleFormat(opts, options)
-
-	_.defaults(options, {
-        retmax: 15,
-        restart: 15,
-        sort: 'relevance',
-	})
-
-	_.assign(opts.qs, options)
-
-	return opts
-}
-
-export function getSummaryOptions(options) {
-	if (!options || !options.ids) {
-		throw new Error('Must Provide Ids')
-	}
-
-	let opts = { url: SUMMARY_URL, qs: {} }
-
-	mergeIds(opts, options)
-	mergeSimpleFormat(opts, options)
-
-	_.assign(opts.qs, options)
-
-	return opts
-}
-
-export function getFetchOptions(name, options) {
-	if (!options || !options.ids) {
-		throw new Error('Must Provide Ids')
-	}
-
-	let opts = { url: FETCH_URL, qs: {} }
-
-	mergeIds(opts, options)
-
-	// We provide a lookup for format types for FETCH
-	if (options.format) {
-		_.assign(opts.qs, getOptionsByDbAndFormat(name, options.format))
-		delete options.format
-	}
-
-	_.assign(opts.qs, options)
-
-	return opts
-}
-
-export function getLinkOptions(options) {
-	if (!options || !options.dbfrom || !options.ids) {
-		throw new Error('Must Provide Ids')
-	}
-
-	let opts = { url: LINK_URL, qs: {} }
-	mergeIds(opts, options)
-	_.assign(opts.qs, options)
-
-	return opts
-}
 
 
 
