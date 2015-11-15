@@ -1,5 +1,5 @@
 {
-  "name": "ncbi-api",
+  "name": "ncbi-entrez-api",
   "version": "1.0.0",
   "description": "Stream compatible wrapper around NCBI Entrez API",
   "main": "dist/index.js",
