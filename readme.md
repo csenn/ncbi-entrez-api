@@ -40,7 +40,7 @@ let gene = dbFactory(DB.GENE)
 gene.info({ format: 'json'}).pipe(fs.createWriteStream('myFile.json'))
 ```
 
-## Full example
+## All methods
 ```
 var NcbiApi = require('ncbi-entrez-api')
 
@@ -71,7 +71,7 @@ For a list of all api specific options, see
 http://www.ncbi.nlm.nih.gov/books/NBK25499/
 
 #### Returning json
-einfo, esummary, and efetch are the only 3 endpoints that currently return json. The rest return xml by default
+einfo, esummary, and efetch are the only 3 endpoints that currently return json. The rest return xml by default. 
 options = {retmode: 'json'}
 
 ### Examples
