@@ -1,8 +1,13 @@
 
 # Introduction
 
-The NCBI Entrez api is a powerful resource for scientists, researchers, and engineers. The api allows consistent access patterns to over 40 databases.
+The NCBI Entrez Api is a powerful resource for scientists, researchers, and engineers. The api allows consistent access patterns to over 40 databases. This module is a wrapper that allows calls to be made to the NCBI Entrez Api.
 
+
+### Install
+```
+npm install ncbi-entrez-api
+```
 
 ### Quick ES6 example
 ```
@@ -65,12 +70,14 @@ gene.efetch(options, callback)
 For a list of all api specific options, see
 http://www.ncbi.nlm.nih.gov/books/NBK25499/
 
-Returning json
+#### Returning json
 einfo, esummary, and efetch are the only 3 endpoints that currently return json. The rest return xml by default
 options = {retmode: 'json'}
 
 ### Examples
 ```
+var NcbiApi = require('ncbi-entrez-api')
+
 var protein = NcbiApi.dbFactory(NcbiApi.DB.PROTEIN)
 var callback = function(err, response, data) {
 	console.log(data)
